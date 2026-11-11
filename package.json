@@ -1,0 +1,30 @@
+{
+  "name": "ectropy",
+  "version": "1.0.0",
+  "description": "Desktop file organizer with preview and undo support",
+  "main": "src/main/index.js",
+  "scripts": {
+    "build:css": "tailwindcss -i src/renderer/styles.css -o src/renderer/dist.css",
+    "start": "npm run build:css && electron .",
+    "test": "node --test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Manish-yk/Ectropy.git"
+  },
+  "author": "Manish-yk",
+  "keywords": [
+    "file-sorter",
+    "electron",
+    "desktop-app",
+    "local-first"
+  ],
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "electron": "^45.2.1",
+    "tailwindcss": "^4.3.3"
+  },
+  "dependencies": {
+    "music-metadata": "^12.3.4"
+  }
+}

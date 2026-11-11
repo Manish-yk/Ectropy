@@ -1,0 +1,8 @@
+node_modules/
+dist/
+dist.css
+src/renderer/dist.css
+history.json
+.DS_Store
+*.log
+.idea/

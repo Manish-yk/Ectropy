@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ectropy — File Organizer</title>
+  <link rel="stylesheet" href="dist.css">
+</head>
+<body>
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="brand-block">
+      <span class="brand-tag">&lt;/&gt; ECTROPY</span>
+    </div>
+
+    <!-- Legacy test selector -->
+    <div class="intro-tagline" aria-hidden="true" style="display:none;">
+      <span class="tagline-word">Sort</span>
+      <span class="tagline-dot">·</span>
+      <span class="tagline-word">Stash</span>
+      <span class="tagline-dot">·</span>
+      <span class="tagline-word">Done</span>
+    </div>
+
+    <div class="header-right">
+      <button id="btnHistoryToggle" class="neo-btn neo-btn-accent" type="button" title="View move history and undo moves" aria-controls="drawerHistory" aria-expanded="false">
+        <span>↶</span>
+        <span>MOVE HISTORY →</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-container">
+
+    <!-- Hero Banner -->
+    <section class="hero-block">
+      <div class="hero-content">
+        <h1 class="hero-title">FILE ORGANIZER</h1>
+        <p class="hero-subtitle">
+          Scans an unorganized directory, classifies files into category folders, and previews every move before relocating.
+        </p>
+      </div>
+
+      <div class="hero-art-card">
+        <pre class="ascii-art-box" aria-hidden="true">
+ (\__/)  
+ (='.'=)  ectropy@local
+ (")_(")  os: linux
+          mode: preview-first
+        </pre>
+      </div>
+    </section>
+
+    <!-- Workspace Grid -->
+    <div class="workspace-grid">
+
+      <!-- Left Column: Setup & Folder Selection -->
+      <div class="left-column">
+
+        <section class="panel setup-panel" aria-labelledby="folderHeading">
+          <div class="panel-banner panel-banner-pink">
+            <span class="banner-title">SETUP · STEP 1</span>
+            <span class="banner-tag">FOLDER SELECT</span>
+          </div>
+
+          <div class="panel-body">
+            <h2 id="folderHeading" class="section-title">CHOOSE DIRECTORIES</h2>
+
+            <!-- Source Directory Picker -->
+            <div class="neo-field">
+              <label for="inputSourceDir">LOOK INSIDE (SOURCE):</label>
+              <div class="neo-input-group">
+                <input id="inputSourceDir" type="text" readonly placeholder="Click choose to pick directory...">
+                <button id="btnBrowseSource" class="neo-btn neo-btn-yellow" type="button">CHOOSE 📁</button>
+              </div>
+            </div>
+
+            <!-- Target Destination Directory Picker -->
+            <div class="neo-field">
+              <label for="inputTargetDir">DROP FILES HERE (DESTINATION):</label>
+              <div class="neo-input-group">
+                <input id="inputTargetDir" type="text" readonly placeholder="Default: Same as source directory">
+                <button id="btnBrowseTarget" class="neo-btn neo-btn-blue" type="button">CHOOSE ↗</button>
+                <button id="btnResetTarget" class="neo-btn neo-btn-white hidden" type="button" title="Use source directory">RESET</button>
+              </div>
+              <p class="field-hint">Category subfolders (Images, Videos, Docs, Music) are generated here.</p>
+            </div>
+
+            <!-- Options Checkboxes & Scan Button -->
+            <div class="setup-actions">
+              <label class="check-label">
+                <input id="chkRecursive" type="checkbox" checked>
+                <span>SCAN SUBFOLDERS RECURSIVELY</span>
+              </label>
+
+              <button id="btnScan" class="neo-btn neo-btn-primary neo-btn-block" type="button">
+                <span>⌕</span>
+                <span>SCAN &amp; PREVIEW FILES</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /left-column -->
+
+
+      <!-- Right Column: Review & Move List -->
+      <div class="right-column">
+
+        <section id="sectionPreview" class="panel preview-panel" aria-labelledby="previewHeading">
+          <div class="panel-banner panel-banner-purple">
+            <span class="banner-title">REVIEW &amp; CONFIRM · STEP 2</span>
+            <span id="badgeFileCount" class="selection-count"></span>
+          </div>
+
+          <div class="panel-body">
+
+            <!-- Title & Toolbar -->
+            <div class="preview-header-row">
+              <div>
+                <h2 id="previewHeading" class="section-title">YOUR MOVE LIST</h2>
+                <span class="sub-lead">Inspect, filter formats, and confirm file relocation:</span>
+              </div>
+
+              <!-- Action Controls -->
+              <div class="preview-action-controls">
+                <!-- Mode Toggle (Move vs Copy) -->
+                <div class="action-mode-toggle" role="group" aria-label="Operation mode">
+                  <button id="btnModeMove" class="mode-btn is-active" type="button" title="Move files and remove from source">MOVE</button>
+                  <button id="btnModeCopy" class="mode-btn" type="button" title="Copy files and keep source intact">COPY</button>
+                </div>
+
+                <button id="btnSelectAll" class="neo-btn neo-btn-white" type="button">ALL FILES</button>
+                <button id="btnDeselectAll" class="neo-btn neo-btn-white" type="button">× CLEAR</button>
+                <button id="btnExecute" class="neo-btn neo-btn-green" type="button" disabled>
+                  <span>↗</span>
+                  <span>MOVE FILES</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Format Filter Bar -->
+            <div id="formatFilterBar" class="format-filter-bar hidden" role="group" aria-label="Filter formats">
+              <span class="format-filter-label">FORMATS:</span>
+              <div id="formatFilterChips" class="format-filter-chips"></div>
+            </div>
+
+            <!-- Shield Alert -->
+            <div id="containerShieldedNotice" class="neo-notice neo-notice-warning hidden" role="status">
+              <strong>⚠️ DEV FOLDERS SHIELDED FOR SAFETY:</strong>
+              <span id="textShieldedCount"></span>
+              <div id="listShieldedFolders" class="shielded-list"></div>
+            </div>
+
+            <!-- File Preview Table -->
+            <div class="table-scroll-container">
+              <table class="neo-table">
+                <thead>
+                  <tr>
+                    <th class="select-column"><input id="chkHeaderSelect" type="checkbox" aria-label="Select all previewed files"></th>
+                    <th>TYPE</th>
+                    <th>FILE NAME</th>
+                    <th>REASON</th>
+                    <th>SIZE</th>
+                    <th>SOURCE PATH</th>
+                    <th>TARGET DESTINATION</th>
+                  </tr>
+                </thead>
+                <tbody id="tableBodyPreview">
+                  <tr><td colspan="7" class="empty-state">Choose a source folder above and click Scan to see files previewed here.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Summary Footer -->
+            <div class="preview-footer-row">
+              <div id="textSelectedSummary" class="footer-summary">0 of 0 files selected</div>
+              <div id="textCategoryBreakdown" class="category-breakdown"></div>
+            </div>
+
+            <!-- Move Progress -->
+            <div id="moveProgress" class="move-progress hidden" role="status" aria-live="polite">
+              <div class="move-progress-heading">
+                <span id="moveProgressLabel">Moving files…</span>
+                <span id="moveProgressCount">0 of 0</span>
+              </div>
+              <progress id="moveProgressBar" max="1" value="0" aria-label="File move progress"></progress>
+            </div>
+
+            <!-- Errors -->
+            <div id="moveErrors" class="move-errors hidden" role="alert" aria-live="assertive">
+              <div class="move-errors-heading">
+                <div class="move-errors-title-group">
+                  <span class="error-badge">ERROR</span>
+                  <strong id="moveErrorsHeading">Move errors</strong>
+                  <span id="textErrorCount" class="error-count-badge"></span>
+                </div>
+                <div class="move-errors-actions">
+                  <button id="btnCopyInstead" class="neo-btn neo-btn-yellow hidden" type="button" title="Copy failed files to destination without removing source">
+                    <span>📋</span> COPY INSTEAD
+                  </button>
+                  <button id="btnCopyMoveErrors" class="neo-btn neo-btn-white" type="button" title="Copy error log to clipboard">
+                    <span>📋</span> COPY ERRORS
+                  </button>
+                  <button id="btnClearMoveErrors" class="neo-btn neo-btn-white" type="button">CLEAR</button>
+                </div>
+              </div>
+              <div id="moveErrorList" class="move-error-list"></div>
+            </div>
+
+          </div>
+        </section>
+
+      </div><!-- /right-column -->
+
+    </div><!-- /workspace-grid -->
+  </main>
+
+  <!-- Move History Drawer -->
+  <aside id="drawerHistory" class="history-panel" aria-labelledby="historyHeading" aria-hidden="true" inert>
+    <div class="history-heading">
+      <div>
+        <span class="banner-tag">AUDIT LOG</span>
+        <h2 id="historyHeading">MOVE HISTORY</h2>
+        <p>Undo moves and restore files to their previous locations.</p>
+      </div>
+      <button id="btnCloseHistory" class="neo-btn neo-btn-white close-button" type="button" aria-label="Close history">✕</button>
+    </div>
+    <div id="listHistory" class="history-list"></div>
+  </aside>
+
+  <!-- Rollback Modal Dialog -->
+  <div id="undoDialog" class="dialog-backdrop" aria-hidden="true" inert>
+    <section class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="undoDialogTitle" aria-describedby="undoDialogMessage" tabindex="-1">
+      <div class="dialog-banner">
+        <span>UNDO CONFIRMATION</span>
+      </div>
+      <div class="dialog-body">
+        <h2 id="undoDialogTitle">RESTORE THESE FILES?</h2>
+        <p id="undoDialogMessage">All files in this move will be restored to their original locations.</p>
+        <div class="dialog-actions">
+          <button id="btnCancelUndo" class="neo-btn neo-btn-white" type="button">CANCEL</button>
+          <button id="btnConfirmUndo" class="neo-btn neo-btn-pink" type="button">RESTORE FILES</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="containerToast" class="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+  <!-- Renderer Script -->
+  <script src="renderer.js"></script>
+</body>
+</html>
